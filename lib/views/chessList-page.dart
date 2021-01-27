@@ -10,6 +10,9 @@ class ChessListPage extends StatefulWidget {
 }
 
 class _ChessListPageState extends State<ChessListPage> {
+  List _clockList = <Clock>[];
+  List get clockList => _clockList;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -21,6 +24,15 @@ class _ChessListPageState extends State<ChessListPage> {
     // TODO: implement dispose
     super.dispose();
     Hive.close();
+  }
+
+  getItem() async {
+    final box = await Hive.openBox<Clock>('clock');
+    setState(() {
+      _clockList = box.values.toList();
+    });
+
+    //notifyListeners();
   }
 
   @override
@@ -37,8 +49,13 @@ class _ChessListPageState extends State<ChessListPage> {
           )
         ],
       ),
-      body: FutureBuilder(
-          future: Hive.openBox("Clocks"),
+      body: RefreshIndicator(
+          onRefresh: () async => getItem(),
+          child: ChessList(
+            lista: _clockList,
+          )
+          /* FutureBuilder(
+          future: Hive.openBox<Clock>("clock"),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               if (snapshot.hasError)
@@ -47,9 +64,12 @@ class _ChessListPageState extends State<ChessListPage> {
                 return ChessList(lista: snapshot.data);
             } else
               return Scaffold();
-          }),
+          }), */
+
+          ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _agregarClock(this.context),
+        onPressed: () => _agregarClock(context),
+        child: Icon(Icons.add),
       ),
     );
   }
@@ -61,7 +81,7 @@ class _ChessListPageState extends State<ChessListPage> {
     TextEditingController _movesToIncrement = TextEditingController();
 
     _guardar() async {
-      var clockBox = await Hive.openBox("Clock");
+      var clockBox = await Hive.openBox("clock");
       var clock = Clock()
         ..description = _description.text
         ..duration = int.parse(_duration.text)
@@ -79,28 +99,39 @@ class _ChessListPageState extends State<ChessListPage> {
 
     return showDialog(
         context: context,
-        child: Form(
-          child: ListView(
-            children: [
-              TextFormField(
-                  decoration: InputDecoration(border: OutlineInputBorder()),
-                  controller: _description),
-              TextFormField(
-                  decoration: InputDecoration(border: OutlineInputBorder()),
-                  controller: _duration),
-              TextFormField(
-                  decoration: InputDecoration(border: OutlineInputBorder()),
-                  controller: _increment),
-              TextFormField(
-                  decoration: InputDecoration(border: OutlineInputBorder()),
-                  controller: _movesToIncrement),
-              RaisedButton(
-                child: Text("Guardar"),
-                onPressed: _guardar,
-              )
-            ],
-          ),
-        ));
+        builder: (context) {
+          return AlertDialog(
+              title: Text("Filtrar Busqueda"),
+              content: Container(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  child: Form(
+                    child: ListView(
+                      children: [
+                        TextFormField(
+                            decoration:
+                                InputDecoration(border: OutlineInputBorder()),
+                            controller: _description),
+                        TextFormField(
+                            decoration:
+                                InputDecoration(border: OutlineInputBorder()),
+                            controller: _duration),
+                        TextFormField(
+                            decoration:
+                                InputDecoration(border: OutlineInputBorder()),
+                            controller: _increment),
+                        TextFormField(
+                            decoration:
+                                InputDecoration(border: OutlineInputBorder()),
+                            controller: _movesToIncrement),
+                        RaisedButton(
+                          child: Text("Guardar"),
+                          onPressed: _guardar,
+                        )
+                      ],
+                    ),
+                  )));
+        });
   }
 }
 

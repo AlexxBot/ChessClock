@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'clock.g.dart';
 
-@HiveType()
+@HiveType(typeId: 0)
 class Clock extends HiveObject {
   @HiveField(0)
   String description;

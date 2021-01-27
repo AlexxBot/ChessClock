@@ -9,9 +9,13 @@ import 'views/chessList-page.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
-  var path = Directory.current.path;
+  WidgetsFlutterBinding.ensureInitialized();
+  Directory directory = await getApplicationDocumentsDirectory();
   Hive
-    ..init(path)
+    ..init(directory.path)
+    //var path = Directory.current.path;
+    //Hive
+    //..init(path)
     ..registerAdapter(ClockAdapter());
   runApp(MyApp());
   //final appDocumentDir = await getApplicationDocumentsDirectory();
